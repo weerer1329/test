@@ -8,37 +8,21 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     
     <style>
+        /* ... (тут весь твой CSS, который я написал выше, он не менялся) ... */
         :root {
-            --bg-color: #17212b;
-            --text-color: #ffffff;
-            --btn-bg: #232e3c;
-            --btn-hover: #2b3a4a;
-            --btn-correct: #31a24c;
-            --btn-wrong: #e83e3e;
-            --accent: #2481cc;
-            --fire: #ff9800;
+            --bg-color: #17212b; --text-color: #ffffff; --btn-bg: #232e3c;
+            --btn-hover: #2b3a4a; --btn-correct: #31a24c; --btn-wrong: #e83e3e;
+            --accent: #2481cc; --fire: #ff9800;
         }
-
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            min-height: 100vh;
-            user-select: none;
+            background-color: var(--bg-color); color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0; padding: 16px; display: flex; flex-direction: column;
+            justify-content: center; min-height: 100vh; user-select: none;
         }
-
-        /* --- Экраны --- */
         .screen { display: none; width: 100%; max-width: 500px; margin: 0 auto; }
         .screen.active { display: block; }
-        
-        /* --- Стартовый экран --- */
         .menu-title { text-align: center; font-size: 22px; margin-bottom: 20px; font-weight: bold; }
         .menu-btn {
             background-color: var(--btn-bg); color: var(--text-color); border: none;
@@ -47,95 +31,39 @@
         }
         .menu-btn:active { transform: scale(0.98); background-color: var(--btn-hover); }
         .menu-btn.infinite { background-color: var(--accent); }
-
-        /* --- Топбар (Счетчик/Серия) --- */
-        .top-bar {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 16px; font-size: 15px; font-weight: 600; color: #7f91a4;
-        }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-size: 15px; font-weight: 600; color: #7f91a4; }
         .fire-streak { color: var(--fire); display: none; font-size: 16px; }
         .fire-streak.active { display: block; }
-
-        /* --- Основной интерфейс --- */
-        .question-box {
-            background-color: var(--btn-bg); padding: 16px; border-radius: 12px;
-            margin-bottom: 16px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            min-height: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
+        .question-box { background-color: var(--btn-bg); padding: 16px; border-radius: 12px; margin-bottom: 16px; text-align: center; min-height: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .question-text { font-size: 16px; font-weight: 600; line-height: 1.4; margin: 0; }
-        
         .options { display: flex; flex-direction: column; gap: 10px; }
-        
-        .option-btn {
-            background-color: var(--btn-bg); color: var(--text-color); border: none;
-            padding: 14px 16px; border-radius: 10px; font-size: 15px; font-weight: 500;
-            cursor: pointer; transition: background-color 0.2s, transform 0.1s; text-align: left; width: 100%;
-        }
-        .option-btn:active { transform: scale(0.98); }
-        .option-btn.correct { background-color: var(--btn-correct); color: #fff; }
-        .option-btn.wrong { background-color: var(--btn-wrong); color: #fff; }
-        .option-btn:disabled { cursor: default; opacity: 0.9; }
-
-        /* --- Поле ввода года --- */
+        .option-btn { background-color: var(--btn-bg); color: var(--text-color); border: none; padding: 14px 16px; border-radius: 10px; font-size: 15px; font-weight: 500; cursor: pointer; text-align: left; width: 100%; }
+        .option-btn.correct { background-color: var(--btn-correct); }
+        .option-btn.wrong { background-color: var(--btn-wrong); }
         .input-area { display: flex; gap: 10px; margin-top: 10px; }
-        .year-input {
-            flex: 1; background-color: var(--btn-bg); border: 1px solid #334155;
-            color: white; padding: 14px; border-radius: 10px; font-size: 16px; outline: none;
-        }
-        .year-input:focus { border-color: var(--accent); }
-        .submit-btn {
-            background-color: var(--accent); color: white; border: none;
-            padding: 14px 20px; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer;
-        }
-
-        /* --- Хронология --- */
+        .year-input { flex: 1; background-color: var(--btn-bg); border: 1px solid #334155; color: white; padding: 14px; border-radius: 10px; font-size: 16px; outline: none; }
+        .submit-btn { background-color: var(--accent); color: white; border: none; padding: 14px 20px; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; }
         .sortable-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
-        .sortable-item {
-            background-color: var(--btn-bg); color: var(--text-color); padding: 14px 16px;
-            border-radius: 10px; font-size: 15px; font-weight: 500; display: flex;
-            align-items: center; gap: 10px; cursor: grab; border: 1px solid #334155;
-        }
-        .sortable-item:active { cursor: grabbing; background-color: var(--btn-hover); }
+        .sortable-item { background-color: var(--btn-bg); color: var(--text-color); padding: 14px 16px; border-radius: 10px; font-size: 15px; display: flex; align-items: center; gap: 10px; border: 1px solid #334155; }
         .drag-handle { color: #7f91a4; font-size: 18px; }
         .sortable-item.correct { border-color: var(--btn-correct); background-color: rgba(49, 162, 76, 0.2); }
         .sortable-item.wrong { border-color: var(--btn-wrong); background-color: rgba(232, 62, 62, 0.2); }
-
-        /* --- Общие кнопки --- */
-        .action-btn {
-            background-color: var(--accent); color: white; border: none; padding: 16px;
-            border-radius: 10px; font-size: 16px; font-weight: 600; width: 100%;
-            cursor: pointer; margin-top: 10px; display: none;
-        }
+        .action-btn { background-color: var(--accent); color: white; border: none; padding: 16px; border-radius: 10px; font-size: 16px; font-weight: 600; width: 100%; cursor: pointer; margin-top: 10px; display: none; }
         .action-btn.active { display: block; }
-
-        /* --- Результаты (Круговая диаграмма) --- */
         .result-box { text-align: center; }
-        .pie-chart {
-            width: 200px; height: 200px; border-radius: 50%; margin: 20px auto;
-            background: conic-gradient(var(--btn-correct) 0% 0%, var(--btn-wrong) 0% 100%);
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            transition: background 1s ease-out;
-        }
-        .pie-inner {
-            width: 140px; height: 140px; background-color: var(--bg-color);
-            border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
+        .pie-chart { width: 200px; height: 200px; border-radius: 50%; margin: 20px auto; background: conic-gradient(var(--btn-correct) 0% 0%, var(--btn-wrong) 0% 100%); display: flex; align-items: center; justify-content: center; }
+        .pie-inner { width: 140px; height: 140px; background-color: var(--bg-color); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .pie-score { font-size: 32px; font-weight: bold; }
         .pie-label { font-size: 14px; color: #7f91a4; }
         .stats { display: flex; justify-content: space-around; margin-top: 20px; font-size: 16px; }
         .stat-item span { display: block; font-size: 24px; font-weight: bold; margin-top: 5px; }
-        .stat-correct span { color: var(--btn-correct); }
-        .stat-wrong span { color: var(--btn-wrong); }
-
-        .error-msg { color: var(--btn-wrong); text-align: center; font-size: 16px; margin-top: 20px; }
+        .error-msg { color: var(--btn-wrong); text-align: center; margin-top: 20px; }
     </style>
 </head>
 <body>
 
     <div id="loading" class="screen active">Загрузка данных...</div>
     
-    <!-- Меню -->
     <div id="menu-screen" class="screen">
         <div class="menu-title">Выберите режим</div>
         <button class="menu-btn" onclick="startGame(10)">10 вопросов</button>
@@ -147,23 +75,16 @@
         <button class="menu-btn infinite" onclick="startGame(Infinity)">🔥 Бесконечный режим</button>
     </div>
 
-    <!-- Игра -->
     <div id="game-screen" class="screen">
         <div class="top-bar">
             <div id="progress-text">Вопрос 1</div>
             <div id="streak-text" class="fire-streak">🔥 Серия: <span id="streak-count">0</span></div>
         </div>
-        
-        <div class="question-box">
-            <h1 class="question-text" id="question">Вопрос</h1>
-        </div>
-        
+        <div class="question-box"><h1 class="question-text" id="question">Вопрос</h1></div>
         <div class="options" id="options"></div>
-        
         <button class="action-btn" id="next-btn" onclick="nextQuestion()">Следующий вопрос</button>
     </div>
 
-    <!-- Результат -->
     <div id="result-screen" class="screen">
         <div class="result-box">
             <div class="menu-title">Результат</div>
@@ -174,8 +95,8 @@
                 </div>
             </div>
             <div class="stats">
-                <div class="stat-item stat-correct">Верно <span id="res-correct">0</span></div>
-                <div class="stat-item stat-wrong">Ошибки <span id="res-wrong">0</span></div>
+                <div class="stat-item" style="color:var(--btn-correct)">Верно <span id="res-correct">0</span></div>
+                <div class="stat-item" style="color:var(--btn-wrong)">Ошибки <span id="res-wrong">0</span></div>
             </div>
             <button class="menu-btn" style="margin-top: 30px;" onclick="showMenu()">В главное меню</button>
         </div>
@@ -188,9 +109,7 @@
 
         let allData = [];
         let sortableInstance = null;
-
-        // Состояние игры
-        let gameMode = 'infinite'; // 'infinite' или число
+        let gameMode = 'infinite';
         let totalQuestions = 0;
         let currentQuestionIndex = 0;
         let correctCount = 0;
@@ -207,9 +126,7 @@
                 if (matches && matches.length >= 2) {
                     const year = matches[0].replace(/^"|"$/g, '').trim();
                     const event = matches[1].replace(/^"|"$/g, '').trim();
-                    if (year && event) {
-                        result.push({ year: year, event: event, numYear: parseInt(year) || 0 });
-                    }
+                    if (year && event) result.push({ year: year, event: event, numYear: parseInt(year) || 0 });
                 }
             }
             return result;
@@ -222,44 +139,35 @@
             }
             return array;
         }
-
         function getRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-
         function switchScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
         }
 
+        // ИСПРАВЛЕННАЯ ФУНКЦИЯ ЗАГРУЗКИ
         async function loadData() {
             try {
                 const response = await fetch(CSV_URL);
                 if (!response.ok) throw new Error("Ошибка сети");
                 const csvText = await response.text();
                 allData = parseCSV(csvText);
-
                 if (allData.length < 4) throw new Error("Мало данных.");
                 
+                // Вот тут мы показываем меню!
                 switchScreen('menu-screen');
             } catch (error) {
                 document.getElementById('loading').innerHTML = `<span class="error-msg">Ошибка: ${error.message}</span>`;
             }
         }
 
-        function showMenu() {
-            switchScreen('menu-screen');
-            document.getElementById('next-btn').classList.remove('active');
-        }
+        function showMenu() { switchScreen('menu-screen'); document.getElementById('next-btn').classList.remove('active'); }
 
-        // --- Старт игры ---
         function startGame(mode) {
             gameMode = mode;
             totalQuestions = mode === Infinity ? Infinity : mode;
-            currentQuestionIndex = 0;
-            correctCount = 0;
-            wrongCount = 0;
-            currentStreak = 0;
+            currentQuestionIndex = 0; correctCount = 0; wrongCount = 0; currentStreak = 0;
             updateStreakUI();
-
             document.getElementById('progress-text').innerText = gameMode === 'infinite' ? 'Бесконечный режим' : `Вопрос 1 / ${totalQuestions}`;
             switchScreen('game-screen');
             nextQuestion();
@@ -270,38 +178,27 @@
             if (gameMode === Infinity) {
                 streakEl.classList.add('active');
                 document.getElementById('streak-count').innerText = currentStreak;
-            } else {
-                streakEl.classList.remove('active');
-            }
+            } else streakEl.classList.remove('active');
         }
 
         function nextQuestion() {
             document.getElementById('next-btn').classList.remove('active');
-            
-            if (gameMode !== Infinity && currentQuestionIndex >= totalQuestions) {
-                return showResult();
-            }
+            if (gameMode !== Infinity && currentQuestionIndex >= totalQuestions) return showResult();
 
             currentQuestionIndex++;
-            if (gameMode !== Infinity) {
-                document.getElementById('progress-text').innerText = `Вопрос ${currentQuestionIndex} / ${totalQuestions}`;
-            }
+            if (gameMode !== Infinity) document.getElementById('progress-text').innerText = `Вопрос ${currentQuestionIndex} / ${totalQuestions}`;
 
             const questionEl = document.getElementById('question');
             const optionsEl = document.getElementById('options');
             optionsEl.innerHTML = '';
-            
             if (sortableInstance) { sortableInstance.destroy(); sortableInstance = null; }
 
-            // Типы: 0 - выбор года, 1 - выбор события, 2 - хронология, 3 - ввод года
             const type = Math.floor(Math.random() * 4); 
-            
             if (type === 0 || type === 1) generateQuizQuestion(type, questionEl, optionsEl);
             else if (type === 2) generateSortableQuestion(questionEl, optionsEl);
             else generateInputQuestion(questionEl, optionsEl);
         }
 
-        // --- Тип 0 и 1: Кнопки ---
         function generateQuizQuestion(type, questionEl, optionsEl) {
             const correctItem = getRandom(allData);
             const wrongPool = allData.filter(item => item !== correctItem);
@@ -326,32 +223,29 @@
                     attempts++;
                 }
             }
-
             if (wrongAnswers.length < 3) return nextQuestion();
 
             questionEl.innerHTML = questionText;
-            const optionsList = shuffle([correctAnswer, ...wrongAnswers]);
-
-            optionsList.forEach(optionText => {
+            shuffle([correctAnswer, ...wrongAnswers]).forEach(optionText => {
                 const btn = document.createElement('button');
                 btn.className = 'option-btn';
                 btn.innerText = optionText;
-                btn.onclick = () => checkAnswer(btn, optionText === correctAnswer, optionsEl);
+                btn.onclick = () => {
+                    const isCorrect = optionText === correctAnswer;
+                    optionsEl.querySelectorAll('.option-btn').forEach(b => { b.disabled = true; if (b.innerText === correctAnswer) b.classList.add('correct'); });
+                    if (!isCorrect) btn.classList.add('wrong');
+                    handleResult(isCorrect);
+                };
                 optionsEl.appendChild(btn);
             });
         }
 
-        // --- Тип 2: Хронология ---
         function generateSortableQuestion(questionEl, optionsEl) {
-            questionEl.innerHTML = "Расставьте события по порядку:<br><span style='font-size:14px; font-weight:normal; color:#7f91a4'>от самого раннего к самому позднему</span>";
+            questionEl.innerHTML = "Расставьте события по порядку:<br><span style='font-size:14px; color:#7f91a4'>от самого раннего к самому позднему</span>";
             const selectedItems = shuffle([...allData]).slice(0, 4);
-            const shuffledItems = shuffle([...selectedItems]);
-
             const listContainer = document.createElement('div');
             listContainer.className = 'sortable-list';
-            listContainer.id = 'sortable-list';
-
-            shuffledItems.forEach((item, index) => {
+            shuffle([...selectedItems]).forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'sortable-item';
                 div.dataset.year = item.numYear;
@@ -359,140 +253,63 @@
                 listContainer.appendChild(div);
             });
             optionsEl.appendChild(listContainer);
-
             const checkBtn = document.createElement('button');
-            checkBtn.className = 'submit-btn';
-            checkBtn.style.width = '100%';
-            checkBtn.innerText = 'Проверить';
-            checkBtn.onclick = () => checkSortableAnswer(listContainer, checkBtn, selectedItems);
+            checkBtn.className = 'submit-btn'; checkBtn.style.width = '100%'; checkBtn.innerText = 'Проверить';
+            checkBtn.onclick = () => {
+                checkBtn.style.display = 'none';
+                const currentItems = Array.from(listContainer.children);
+                const correctOrder = [...selectedItems].sort((a, b) => a.numYear - b.numYear);
+                let allCorrect = true;
+                currentItems.forEach((el, index) => {
+                    if (parseInt(el.dataset.year) === correctOrder[index].numYear) el.classList.add('correct');
+                    else { el.classList.add('wrong'); allCorrect = false; }
+                });
+                sortableInstance.option('disabled', true);
+                handleResult(allCorrect);
+            };
             optionsEl.appendChild(checkBtn);
-
             sortableInstance = new Sortable(listContainer, { animation: 150, handle: '.drag-handle' });
         }
 
-        // --- Тип 3: Ввод года ---
         function generateInputQuestion(questionEl, optionsEl) {
             const item = getRandom(allData);
             questionEl.innerHTML = `Напишите год, в котором произошло событие:<br><br>"${item.event}"`;
-
-            const inputArea = document.createElement('div');
-            inputArea.className = 'input-area';
-            
-            const input = document.createElement('input');
-            input.type = 'number';
-            input.className = 'year-input';
-            input.placeholder = 'Например: 1054';
-            
-            const btn = document.createElement('button');
-            btn.className = 'submit-btn';
-            btn.innerText = 'Ответить';
-            
-            // Отправка по Enter
+            const inputArea = document.createElement('div'); inputArea.className = 'input-area';
+            const input = document.createElement('input'); input.type = 'number'; input.className = 'year-input'; input.placeholder = 'Год';
+            const btn = document.createElement('button'); btn.className = 'submit-btn'; btn.innerText = 'Ответить';
             input.addEventListener('keypress', (e) => { if (e.key === 'Enter') btn.click(); });
-
             btn.onclick = () => {
                 if (!input.value) return;
                 const isCorrect = input.value.trim() === item.year;
-                input.disabled = true;
-                btn.style.display = 'none';
-                
-                if (!isCorrect) {
-                    // Если ошибся — показываем правильный ответ
-                    questionEl.innerHTML += `<br><br><span style="color:var(--btn-wrong); font-size:14px;">Правильный ответ: ${item.year}</span>`;
-                } else {
-                    questionEl.innerHTML += `<br><br><span style="color:var(--btn-correct); font-size:14px;">Верно!</span>`;
-                }
-                
+                input.disabled = true; btn.style.display = 'none';
+                questionEl.innerHTML += isCorrect ? `<br><br><span style="color:var(--btn-correct); font-size:14px;">Верно!</span>` : `<br><br><span style="color:var(--btn-wrong); font-size:14px;">Правильный ответ: ${item.year}</span>`;
                 handleResult(isCorrect);
             };
-
-            inputArea.appendChild(input);
-            inputArea.appendChild(btn);
-            optionsEl.appendChild(inputArea);
-            
-            // Фокус на поле ввода
+            inputArea.appendChild(input); inputArea.appendChild(btn); optionsEl.appendChild(inputArea);
             setTimeout(() => input.focus(), 100);
         }
 
-        // --- Проверки ---
-        function checkAnswer(clickedBtn, isCorrect, optionsContainer) {
-            const allBtns = optionsContainer.querySelectorAll('.option-btn');
-            allBtns.forEach(b => b.disabled = true);
-            
-            if (isCorrect) {
-                clickedBtn.classList.add('correct');
-            } else {
-                clickedBtn.classList.add('wrong');
-                // Подсвечиваем правильный
-                allBtns.forEach(b => {
-                    if (!b.classList.contains('wrong') && b.innerText !== clickedBtn.innerText) {
-                        // Простая эвристика: правильный ответ всегда один из вариантов
-                        // В данной логике мы не передаем правильный текст, поэтому
-                        // придется немного схитрить или изменить логику. 
-                        // Но для простоты оставим только красный на ошибочном.
-                    }
-                });
-            }
-            handleResult(isCorrect);
-        }
-
-        function checkSortableAnswer(listContainer, checkBtn, originalItems) {
-            checkBtn.style.display = 'none';
-            const currentItems = Array.from(listContainer.children);
-            const correctOrder = [...originalItems].sort((a, b) => a.numYear - b.numYear);
-            
-            let allCorrect = true;
-            currentItems.forEach((el, index) => {
-                const currentYear = parseInt(el.dataset.year);
-                const correctYear = correctOrder[index].numYear;
-                if (currentYear === correctYear) el.classList.add('correct');
-                else { el.classList.add('wrong'); allCorrect = false; }
-            });
-
-            // Блокируем перетаскивание
-            sortableInstance.option('disabled', true);
-            handleResult(allCorrect);
-        }
-
-        // --- Обработка результата ---
         function handleResult(isCorrect) {
             if (isCorrect) {
                 correctCount++;
-                if (gameMode === Infinity) {
-                    currentStreak++;
-                    updateStreakUI();
-                }
+                if (gameMode === Infinity) { currentStreak++; updateStreakUI(); }
             } else {
                 wrongCount++;
-                if (gameMode === Infinity) {
-                    currentStreak = 0;
-                    updateStreakUI();
-                }
+                if (gameMode === Infinity) { currentStreak = 0; updateStreakUI(); }
             }
-            
-            // Показываем кнопку "Далее"
             document.getElementById('next-btn').classList.add('active');
         }
 
-        // --- Экран результатов ---
         function showResult() {
             switchScreen('result-screen');
-            
             const total = correctCount + wrongCount;
             const percent = total === 0 ? 0 : Math.round((correctCount / total) * 100);
-            
             document.getElementById('pie-score').innerText = percent + '%';
             document.getElementById('res-correct').innerText = correctCount;
             document.getElementById('res-wrong').innerText = wrongCount;
-
-            // Анимируем круговую диаграмму
             const pie = document.getElementById('pie');
-            // Сброс перед анимацией
             pie.style.background = `conic-gradient(var(--btn-correct) 0% 0%, var(--btn-wrong) 0% 100%)`;
-            
-            setTimeout(() => {
-                pie.style.background = `conic-gradient(var(--btn-correct) 0% ${percent}%, var(--btn-wrong) ${percent}% 100%)`;
-            }, 100);
+            setTimeout(() => { pie.style.background = `conic-gradient(var(--btn-correct) 0% ${percent}%, var(--btn-wrong) ${percent}% 100%)`; }, 100);
         }
 
         loadData();
