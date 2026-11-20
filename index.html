@@ -6,115 +6,214 @@
     <title>Исторический Тест</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
-    
     <style>
-        /* ... (тут весь твой CSS, который я написал выше, он не менялся) ... */
         :root {
-            --bg-color: #17212b; --text-color: #ffffff; --btn-bg: #232e3c;
-            --btn-hover: #2b3a4a; --btn-correct: #31a24c; --btn-wrong: #e83e3e;
-            --accent: #2481cc; --fire: #ff9800;
+            --bg-color: #17212b;
+            --text-color: #ffffff;
+            --btn-bg: #232e3c;
+            --btn-hover: #2b3a4a;
+            --btn-correct: #31a24c;
+            --btn-wrong: #e83e3e;
+            --accent: #2481cc;
+            --text-muted: #7f91a4;
         }
+
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
         body {
-            background-color: var(--bg-color); color: var(--text-color);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            margin: 0; padding: 16px; display: flex; flex-direction: column;
-            justify-content: center; min-height: 100vh; user-select: none;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            user-select: none;
         }
-        .screen { display: none; width: 100%; max-width: 500px; margin: 0 auto; }
-        .screen.active { display: block; }
-        .menu-title { text-align: center; font-size: 22px; margin-bottom: 20px; font-weight: bold; }
-        .menu-btn {
-            background-color: var(--btn-bg); color: var(--text-color); border: none;
-            padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 600;
-            width: 100%; margin-bottom: 12px; cursor: pointer; transition: 0.2s;
+
+        #loading { text-align: center; font-size: 16px; color: var(--text-muted); margin-top: 40vh; }
+
+        .screen { display: none; width: 100%; max-width: 500px; margin: 0 auto; flex-direction: column; flex: 1; }
+        .screen.active { display: flex; }
+
+        /* --- Стартовый экран --- */
+        .start-title { text-align: center; font-size: 24px; margin-top: 20px; margin-bottom: 10px; font-weight: 700; }
+        .start-sub { text-align: center; color: var(--text-muted); font-size: 15px; margin-bottom: 30px; }
+        
+        .mode-title { font-size: 16px; font-weight: 600; margin-bottom: 10px; color: var(--text-muted); }
+        
+        .grid-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+        .grid-buttons button {
+            background-color: var(--btn-bg); color: var(--text-color); border: none; padding: 16px;
+            border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s;
         }
-        .menu-btn:active { transform: scale(0.98); background-color: var(--btn-hover); }
-        .menu-btn.infinite { background-color: var(--accent); }
-        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-size: 15px; font-weight: 600; color: #7f91a4; }
-        .fire-streak { color: var(--fire); display: none; font-size: 16px; }
-        .fire-streak.active { display: block; }
-        .question-box { background-color: var(--btn-bg); padding: 16px; border-radius: 12px; margin-bottom: 16px; text-align: center; min-height: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .grid-buttons button:active { background-color: var(--btn-hover); transform: scale(0.98); }
+        
+        .btn-infinite {
+            background-color: var(--accent) !important; color: #fff; grid-column: span 2; font-size: 18px !important;
+        }
+        .btn-infinite:active { background-color: #1e6aa8 !important; }
+
+        /* --- Экран игры --- */
+        .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-weight: 600; font-size: 15px; }
+        .progress-text { color: var(--text-muted); }
+        .streak-text { color: #f5a623; display: flex; align-items: center; gap: 5px; }
+
+        .question-box {
+            background-color: var(--btn-bg); padding: 16px; border-radius: 12px; margin-bottom: 16px;
+            text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2); min-height: 80px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
         .question-text { font-size: 16px; font-weight: 600; line-height: 1.4; margin: 0; }
-        .options { display: flex; flex-direction: column; gap: 10px; }
-        .option-btn { background-color: var(--btn-bg); color: var(--text-color); border: none; padding: 14px 16px; border-radius: 10px; font-size: 15px; font-weight: 500; cursor: pointer; text-align: left; width: 100%; }
-        .option-btn.correct { background-color: var(--btn-correct); }
-        .option-btn.wrong { background-color: var(--btn-wrong); }
-        .input-area { display: flex; gap: 10px; margin-top: 10px; }
-        .year-input { flex: 1; background-color: var(--btn-bg); border: 1px solid #334155; color: white; padding: 14px; border-radius: 10px; font-size: 16px; outline: none; }
-        .submit-btn { background-color: var(--accent); color: white; border: none; padding: 14px 20px; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; }
+
+        .options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+
+        .option-btn {
+            background-color: var(--btn-bg); color: var(--text-color); border: none; padding: 14px 16px;
+            border-radius: 10px; font-size: 15px; font-weight: 500; cursor: pointer; transition: 0.2s;
+            text-align: left; width: 100%;
+        }
+        .option-btn:active { transform: scale(0.98); }
+        .option-btn.correct { background-color: var(--btn-correct); color: #fff; }
+        .option-btn.wrong { background-color: var(--btn-wrong); color: #fff; }
+        .option-btn:disabled { cursor: default; opacity: 0.9; }
+
+        /* Поле ввода */
+        .input-group { display: flex; gap: 10px; margin-bottom: 10px; }
+        .input-year {
+            flex: 1; background-color: var(--btn-bg); border: 2px solid var(--btn-bg); color: white;
+            padding: 14px; border-radius: 10px; font-size: 16px; outline: none; text-align: center;
+        }
+        .input-year:focus { border-color: var(--accent); }
+        .input-year.correct { border-color: var(--btn-correct); color: var(--btn-correct); font-weight: bold; }
+        .input-year.wrong { border-color: var(--btn-wrong); color: var(--btn-wrong); font-weight: bold; }
+
+        /* Хронология */
         .sortable-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
-        .sortable-item { background-color: var(--btn-bg); color: var(--text-color); padding: 14px 16px; border-radius: 10px; font-size: 15px; display: flex; align-items: center; gap: 10px; border: 1px solid #334155; }
-        .drag-handle { color: #7f91a4; font-size: 18px; }
+        .sortable-item {
+            background-color: var(--btn-bg); color: var(--text-color); padding: 14px 16px; border-radius: 10px;
+            font-size: 15px; font-weight: 500; display: flex; align-items: center; gap: 10px;
+            cursor: grab; border: 1px solid #334155;
+        }
+        .sortable-item:active { cursor: grabbing; background-color: var(--btn-hover); }
+        .drag-handle { color: var(--text-muted); font-size: 18px; }
         .sortable-item.correct { border-color: var(--btn-correct); background-color: rgba(49, 162, 76, 0.2); }
         .sortable-item.wrong { border-color: var(--btn-wrong); background-color: rgba(232, 62, 62, 0.2); }
-        .action-btn { background-color: var(--accent); color: white; border: none; padding: 16px; border-radius: 10px; font-size: 16px; font-weight: 600; width: 100%; cursor: pointer; margin-top: 10px; display: none; }
-        .action-btn.active { display: block; }
-        .result-box { text-align: center; }
-        .pie-chart { width: 200px; height: 200px; border-radius: 50%; margin: 20px auto; background: conic-gradient(var(--btn-correct) 0% 0%, var(--btn-wrong) 0% 100%); display: flex; align-items: center; justify-content: center; }
-        .pie-inner { width: 140px; height: 140px; background-color: var(--bg-color); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .pie-score { font-size: 32px; font-weight: bold; }
-        .pie-label { font-size: 14px; color: #7f91a4; }
-        .stats { display: flex; justify-content: space-around; margin-top: 20px; font-size: 16px; }
-        .stat-item span { display: block; font-size: 24px; font-weight: bold; margin-top: 5px; }
-        .error-msg { color: var(--btn-wrong); text-align: center; margin-top: 20px; }
+
+        /* Кнопки действий (Дальше / Проверить) */
+        .action-btn {
+            background-color: var(--accent); color: white; border: none; padding: 16px; border-radius: 10px;
+            font-size: 16px; font-weight: 600; width: 100%; cursor: pointer; margin-top: auto; display: none;
+        }
+        .action-btn:active { background-color: #1e6aa8; }
+        .action-btn.show { display: block; animation: fadeIn 0.3s; }
+
+        /* --- Экран результатов --- */
+        .result-title { text-align: center; font-size: 22px; font-weight: 700; margin-bottom: 20px; margin-top: 20px; }
+        .chart-container { position: relative; width: 160px; height: 160px; margin: 0 auto 30px auto; }
+        .pie-chart {
+            width: 100%; height: 100%; border-radius: 50%;
+            background: conic-gradient(var(--btn-correct) var(--percent), var(--btn-wrong) 0);
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .pie-inner {
+            width: 120px; height: 120px; background-color: var(--bg-color); border-radius: 50%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        .pie-percent { font-size: 28px; font-weight: bold; }
+        .stats { display: flex; justify-content: space-around; margin-bottom: 30px; }
+        .stat-item { text-align: center; }
+        .stat-val { font-size: 20px; font-weight: bold; margin-bottom: 4px; }
+        .stat-label { font-size: 13px; color: var(--text-muted); }
+        .stat-item.correct .stat-val { color: var(--btn-correct); }
+        .stat-item.wrong .stat-val { color: var(--btn-wrong); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div id="loading" class="screen active">Загрузка данных...</div>
-    
-    <div id="menu-screen" class="screen">
-        <div class="menu-title">Выберите режим</div>
-        <button class="menu-btn" onclick="startGame(10)">10 вопросов</button>
-        <button class="menu-btn" onclick="startGame(15)">15 вопросов</button>
-        <button class="menu-btn" onclick="startGame(20)">20 вопросов</button>
-        <button class="menu-btn" onclick="startGame(25)">25 вопросов</button>
-        <button class="menu-btn" onclick="startGame(30)">30 вопросов</button>
-        <button class="menu-btn" onclick="startGame(35)">35 вопросов</button>
-        <button class="menu-btn infinite" onclick="startGame(Infinity)">🔥 Бесконечный режим</button>
-    </div>
+    <div id="loading">Загрузка данных...</div>
 
-    <div id="game-screen" class="screen">
-        <div class="top-bar">
-            <div id="progress-text">Вопрос 1</div>
-            <div id="streak-text" class="fire-streak">🔥 Серия: <span id="streak-count">0</span></div>
+    <!-- Стартовый экран -->
+    <div id="start-screen" class="screen">
+        <div class="start-title">Исторический Тест</div>
+        <div class="start-sub">Проверь свои знания!</div>
+        
+        <div class="mode-title">Выбери количество вопросов:</div>
+        <div class="grid-buttons">
+            <button onclick="startGame(10)">10 вопросов</button>
+            <button onclick="startGame(15)">15 вопросов</button>
+            <button onclick="startGame(20)">20 вопросов</button>
+            <button onclick="startGame(25)">25 вопросов</button>
+            <button onclick="startGame(30)">30 вопросов</button>
+            <button onclick="startGame(35)">35 вопросов</button>
+            <button class="btn-infinite" onclick="startGame(0)">Бесконечный режим 🔥</button>
         </div>
-        <div class="question-box"><h1 class="question-text" id="question">Вопрос</h1></div>
-        <div class="options" id="options"></div>
-        <button class="action-btn" id="next-btn" onclick="nextQuestion()">Следующий вопрос</button>
     </div>
 
+    <!-- Экран игры -->
+    <div id="game-screen" class="screen">
+        <div class="header-bar">
+            <div id="progress-text" class="progress-text"></div>
+            <div id="streak-text" class="streak-text" style="display: none;">🔥 Серия: <span id="streak-count">0</span></div>
+        </div>
+        
+        <div class="question-box">
+            <h1 class="question-text" id="question">Вопрос</h1>
+        </div>
+        
+        <div class="options" id="options"></div>
+        
+        <button id="next-btn" class="action-btn" onclick="nextQuestion()">Дальше</button>
+    </div>
+
+    <!-- Экран результатов -->
     <div id="result-screen" class="screen">
-        <div class="result-box">
-            <div class="menu-title">Результат</div>
-            <div class="pie-chart" id="pie">
+        <div class="result-title">Результаты</div>
+        
+        <div class="chart-container">
+            <div class="pie-chart" id="pie-chart">
                 <div class="pie-inner">
-                    <div class="pie-score" id="pie-score">0%</div>
-                    <div class="pie-label">Правильно</div>
+                    <span class="pie-percent" id="pie-percent">0%</span>
+                    <span style="font-size: 12px; color: var(--text-muted);">успех</span>
                 </div>
             </div>
-            <div class="stats">
-                <div class="stat-item" style="color:var(--btn-correct)">Верно <span id="res-correct">0</span></div>
-                <div class="stat-item" style="color:var(--btn-wrong)">Ошибки <span id="res-wrong">0</span></div>
-            </div>
-            <button class="menu-btn" style="margin-top: 30px;" onclick="showMenu()">В главное меню</button>
         </div>
+
+        <div class="stats">
+            <div class="stat-item correct">
+                <div class="stat-val" id="res-correct">0</div>
+                <div class="stat-label">Правильно</div>
+            </div>
+            <div class="stat-item wrong">
+                <div class="stat-val" id="res-wrong">0</div>
+                <div class="stat-label">Неправильно</div>
+            </div>
+        </div>
+
+        <button class="action-btn show" style="margin-top: auto;" onclick="goToMenu()">В главное меню</button>
     </div>
 
     <script>
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQTn-CgZGj1yqA4AZE1oW3SrZQmnadfwAYSiPaIGFMK0r6TIFbP1gQ7RI9wK0DH9rIC_Ub1fYjPbGe5/pub?gid=0&single=true&output=csv";
 
-        if (window.Telegram?.WebApp) { window.Telegram.WebApp.ready(); window.Telegram.WebApp.expand(); }
+        const tg = window.Telegram?.WebApp;
+        if (tg) { tg.ready(); tg.expand(); }
 
         let allData = [];
         let sortableInstance = null;
-        let gameMode = 'infinite';
+
+        // Состояние игры
+        let gameMode = 'infinite'; // 'finite' или 'infinite'
         let totalQuestions = 0;
-        let currentQuestionIndex = 0;
-        let correctCount = 0;
-        let wrongCount = 0;
-        let currentStreak = 0;
+        let currentQuestionNum = 0;
+        let correctAnswers = 0;
+        let wrongAnswers = 0;
+        let streak = 0;
 
         function parseCSV(text) {
             const lines = text.split('\n');
@@ -139,13 +238,9 @@
             }
             return array;
         }
-        function getRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-        function switchScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
-        }
 
-        // ИСПРАВЛЕННАЯ ФУНКЦИЯ ЗАГРУЗКИ
+        function getRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
         async function loadData() {
             try {
                 const response = await fetch(CSV_URL);
@@ -153,64 +248,102 @@
                 const csvText = await response.text();
                 allData = parseCSV(csvText);
                 if (allData.length < 4) throw new Error("Мало данных.");
-                
-                // Вот тут мы показываем меню!
-                switchScreen('menu-screen');
+
+                document.getElementById('loading').style.display = 'none';
+                showScreen('start-screen');
             } catch (error) {
-                document.getElementById('loading').innerHTML = `<span class="error-msg">Ошибка: ${error.message}</span>`;
+                document.getElementById('loading').innerHTML = `<span style="color:red">Ошибка: ${error.message}</span>`;
             }
         }
 
-        function showMenu() { switchScreen('menu-screen'); document.getElementById('next-btn').classList.remove('active'); }
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
 
-        function startGame(mode) {
-            gameMode = mode;
-            totalQuestions = mode === Infinity ? Infinity : mode;
-            currentQuestionIndex = 0; correctCount = 0; wrongCount = 0; currentStreak = 0;
+        // --- Управление игрой ---
+        function startGame(questionsCount) {
+            gameMode = questionsCount === 0 ? 'infinite' : 'finite';
+            totalQuestions = questionsCount;
+            currentQuestionNum = 0;
+            correctAnswers = 0;
+            wrongAnswers = 0;
+            streak = 0;
+
+            document.getElementById('streak-text').style.display = gameMode === 'infinite' ? 'flex' : 'none';
             updateStreakUI();
-            document.getElementById('progress-text').innerText = gameMode === 'infinite' ? 'Бесконечный режим' : `Вопрос 1 / ${totalQuestions}`;
-            switchScreen('game-screen');
+            
+            showScreen('game-screen');
             nextQuestion();
         }
 
         function updateStreakUI() {
-            const streakEl = document.getElementById('streak-text');
-            if (gameMode === Infinity) {
-                streakEl.classList.add('active');
-                document.getElementById('streak-count').innerText = currentStreak;
-            } else streakEl.classList.remove('active');
+            if (gameMode === 'infinite') {
+                document.getElementById('streak-count').innerText = streak;
+            }
         }
 
         function nextQuestion() {
-            document.getElementById('next-btn').classList.remove('active');
-            if (gameMode !== Infinity && currentQuestionIndex >= totalQuestions) return showResult();
+            if (gameMode === 'finite' && currentQuestionNum >= totalQuestions) {
+                showResults();
+                return;
+            }
 
-            currentQuestionIndex++;
-            if (gameMode !== Infinity) document.getElementById('progress-text').innerText = `Вопрос ${currentQuestionIndex} / ${totalQuestions}`;
+            currentQuestionNum++;
+            
+            const progressEl = document.getElementById('progress-text');
+            progressEl.innerText = gameMode === 'finite' ? `${currentQuestionNum} / ${totalQuestions}` : `Вопрос ${currentQuestionNum}`;
+            
+            const nextBtn = document.getElementById('next-btn');
+            nextBtn.classList.remove('show');
+            nextBtn.onclick = () => nextQuestion();
 
             const questionEl = document.getElementById('question');
             const optionsEl = document.getElementById('options');
+            
             optionsEl.innerHTML = '';
             if (sortableInstance) { sortableInstance.destroy(); sortableInstance = null; }
 
+            // 0 - В каком году, 1 - Что произошло, 2 - Ввод года, 3 - Хронология
             const type = Math.floor(Math.random() * 4); 
+            
             if (type === 0 || type === 1) generateQuizQuestion(type, questionEl, optionsEl);
-            else if (type === 2) generateSortableQuestion(questionEl, optionsEl);
-            else generateInputQuestion(questionEl, optionsEl);
+            else if (type === 2) generateInputQuestion(questionEl, optionsEl);
+            else generateSortableQuestion(questionEl, optionsEl);
         }
 
+        function handleCorrectAnswer() {
+            correctAnswers++;
+            if (gameMode === 'infinite') { streak++; updateStreakUI(); }
+        }
+
+        function handleWrongAnswer() {
+            wrongAnswers++;
+            if (gameMode === 'infinite') { streak = 0; updateStreakUI(); }
+        }
+
+        function markAnswer(isCorrect) {
+            if (isCorrect) handleCorrectAnswer();
+            else handleWrongAnswer();
+            document.getElementById('next-btn').classList.add('show');
+        }
+
+        // --- Генерация обычных вопросов ---
         function generateQuizQuestion(type, questionEl, optionsEl) {
             const correctItem = getRandom(allData);
             const wrongPool = allData.filter(item => item !== correctItem);
-            let questionText = "", correctAnswer = "", wrongAnswers = [];
+            
+            let questionText = "";
+            let correctAnswer = "";
+            let wrongAnswers = [];
 
             if (type === 0) {
                 questionText = `В каком году произошло событие:<br><br>"${correctItem.event}"?`;
                 correctAnswer = correctItem.year;
                 let attempts = 0;
                 while (wrongAnswers.length < 3 && attempts < 100) {
-                    const r = getRandom(wrongPool);
-                    if (!wrongAnswers.includes(r.year) && r.year !== correctAnswer) wrongAnswers.push(r.year);
+                    const randItem = getRandom(wrongPool);
+                    if (!wrongAnswers.includes(randItem.year) && randItem.year !== correctAnswer) wrongAnswers.push(randItem.year);
                     attempts++;
                 }
             } else {
@@ -218,98 +351,150 @@
                 correctAnswer = correctItem.event;
                 let attempts = 0;
                 while (wrongAnswers.length < 3 && attempts < 100) {
-                    const r = getRandom(wrongPool);
-                    if (!wrongAnswers.includes(r.event) && r.event !== correctAnswer) wrongAnswers.push(r.event);
+                    const randItem = getRandom(wrongPool);
+                    if (!wrongAnswers.includes(randItem.event) && randItem.event !== correctAnswer) wrongAnswers.push(randItem.event);
                     attempts++;
                 }
             }
-            if (wrongAnswers.length < 3) return nextQuestion();
 
+            if (wrongAnswers.length < 3) return nextQuestion();
             questionEl.innerHTML = questionText;
-            shuffle([correctAnswer, ...wrongAnswers]).forEach(optionText => {
+            const optionsList = shuffle([correctAnswer, ...wrongAnswers]);
+
+            optionsList.forEach(optionText => {
                 const btn = document.createElement('button');
                 btn.className = 'option-btn';
                 btn.innerText = optionText;
                 btn.onclick = () => {
                     const isCorrect = optionText === correctAnswer;
-                    optionsEl.querySelectorAll('.option-btn').forEach(b => { b.disabled = true; if (b.innerText === correctAnswer) b.classList.add('correct'); });
-                    if (!isCorrect) btn.classList.add('wrong');
-                    handleResult(isCorrect);
+                    optionsEl.querySelectorAll('.option-btn').forEach(b => {
+                        b.disabled = true;
+                        if (b.innerText === correctAnswer) b.classList.add('correct');
+                        else if (b === btn && !isCorrect) b.classList.add('wrong');
+                    });
+                    markAnswer(isCorrect);
                 };
                 optionsEl.appendChild(btn);
             });
         }
 
+        // --- Ввод года ---
+        function generateInputQuestion(questionEl, optionsEl) {
+            const correctItem = getRandom(allData);
+            questionEl.innerHTML = `Напишите год, в котором произошло событие:<br><br>"${correctItem.event}"`;
+            
+            const group = document.createElement('div');
+            group.className = 'input-group';
+            
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.inputMode = 'numeric'; // Открывает цифровую клавиатуру
+            input.placeholder = 'Введите год...';
+            input.className = 'input-year';
+            
+            const submitBtn = document.createElement('button');
+            submitBtn.className = 'option-btn';
+            submitBtn.style.width = '80px';
+            submitBtn.style.textAlign = 'center';
+            submitBtn.innerText = 'ОК';
+            
+            group.appendChild(input);
+            group.appendChild(submitBtn);
+            optionsEl.appendChild(group);
+
+            const handleCheck = () => {
+                if (!input.value.trim()) return;
+                const isCorrect = input.value.trim() === correctItem.year;
+                
+                input.disabled = true;
+                submitBtn.disabled = true;
+                submitBtn.style.display = 'none';
+                
+                if (isCorrect) {
+                    input.classList.add('correct');
+                } else {
+                    input.classList.add('wrong');
+                    // Показываем правильный ответ
+                    const correctText = document.createElement('div');
+                    correctText.style.cssText = "text-align: center; color: var(--text-muted); margin-top: 10px; font-size: 14px;";
+                    correctText.innerHTML = `Правильный ответ: <b style="color: var(--btn-correct); font-size: 16px;">${correctItem.year}</b>`;
+                    optionsEl.appendChild(correctText);
+                }
+                markAnswer(isCorrect);
+            };
+
+            submitBtn.onclick = handleCheck;
+            input.onkeydown = (e) => { if (e.key === 'Enter') handleCheck(); };
+            input.focus();
+        }
+
+        // --- Хронология ---
         function generateSortableQuestion(questionEl, optionsEl) {
-            questionEl.innerHTML = "Расставьте события по порядку:<br><span style='font-size:14px; color:#7f91a4'>от самого раннего к самому позднему</span>";
+            questionEl.innerHTML = "Расставьте события по порядку:<br><span style='font-size:13px; font-weight:normal; color:#7f91a4'>от самого раннего к самому позднему</span>";
+            
             const selectedItems = shuffle([...allData]).slice(0, 4);
+            const shuffledItems = shuffle([...selectedItems]);
+
             const listContainer = document.createElement('div');
             listContainer.className = 'sortable-list';
-            shuffle([...selectedItems]).forEach(item => {
+            listContainer.id = 'sortable-list';
+
+            shuffledItems.forEach((item) => {
                 const div = document.createElement('div');
                 div.className = 'sortable-item';
                 div.dataset.year = item.numYear;
                 div.innerHTML = `<span class="drag-handle">≡</span> <span>${item.event}</span>`;
                 listContainer.appendChild(div);
             });
+
             optionsEl.appendChild(listContainer);
+
             const checkBtn = document.createElement('button');
-            checkBtn.className = 'submit-btn'; checkBtn.style.width = '100%'; checkBtn.innerText = 'Проверить';
+            checkBtn.className = 'action-btn show'; // Сразу показываем кнопку Проверить
+            checkBtn.innerText = 'Проверить';
+            optionsEl.appendChild(checkBtn);
+
+            sortableInstance = new Sortable(listContainer, {
+                animation: 150, handle: '.drag-handle', ghostClass: 'sortable-ghost'
+            });
+
             checkBtn.onclick = () => {
                 checkBtn.style.display = 'none';
                 const currentItems = Array.from(listContainer.children);
                 const correctOrder = [...selectedItems].sort((a, b) => a.numYear - b.numYear);
-                let allCorrect = true;
+                
+                let isAllCorrect = true;
                 currentItems.forEach((el, index) => {
-                    if (parseInt(el.dataset.year) === correctOrder[index].numYear) el.classList.add('correct');
-                    else { el.classList.add('wrong'); allCorrect = false; }
+                    const currentYear = parseInt(el.dataset.year);
+                    const correctYear = correctOrder[index].numYear;
+                    if (currentYear === correctYear) {
+                        el.classList.add('correct');
+                    } else {
+                        el.classList.add('wrong');
+                        isAllCorrect = false;
+                    }
                 });
-                sortableInstance.option('disabled', true);
-                handleResult(allCorrect);
+
+                // Для хронологии считаем ответ верным, только если ВСЕ блоки на своих местах
+                markAnswer(isAllCorrect);
             };
-            optionsEl.appendChild(checkBtn);
-            sortableInstance = new Sortable(listContainer, { animation: 150, handle: '.drag-handle' });
         }
 
-        function generateInputQuestion(questionEl, optionsEl) {
-            const item = getRandom(allData);
-            questionEl.innerHTML = `Напишите год, в котором произошло событие:<br><br>"${item.event}"`;
-            const inputArea = document.createElement('div'); inputArea.className = 'input-area';
-            const input = document.createElement('input'); input.type = 'number'; input.className = 'year-input'; input.placeholder = 'Год';
-            const btn = document.createElement('button'); btn.className = 'submit-btn'; btn.innerText = 'Ответить';
-            input.addEventListener('keypress', (e) => { if (e.key === 'Enter') btn.click(); });
-            btn.onclick = () => {
-                if (!input.value) return;
-                const isCorrect = input.value.trim() === item.year;
-                input.disabled = true; btn.style.display = 'none';
-                questionEl.innerHTML += isCorrect ? `<br><br><span style="color:var(--btn-correct); font-size:14px;">Верно!</span>` : `<br><br><span style="color:var(--btn-wrong); font-size:14px;">Правильный ответ: ${item.year}</span>`;
-                handleResult(isCorrect);
-            };
-            inputArea.appendChild(input); inputArea.appendChild(btn); optionsEl.appendChild(inputArea);
-            setTimeout(() => input.focus(), 100);
+        // --- Результаты ---
+        function showResults() {
+            showScreen('result-screen');
+            
+            const total = correctAnswers + wrongAnswers;
+            const percent = total === 0 ? 0 : Math.round((correctAnswers / total) * 100);
+            
+            document.getElementById('pie-percent').innerText = `${percent}%`;
+            document.getElementById('pie-chart').style.setProperty('--percent', `${percent}%`);
+            document.getElementById('res-correct').innerText = correctAnswers;
+            document.getElementById('res-wrong').innerText = wrongAnswers;
         }
 
-        function handleResult(isCorrect) {
-            if (isCorrect) {
-                correctCount++;
-                if (gameMode === Infinity) { currentStreak++; updateStreakUI(); }
-            } else {
-                wrongCount++;
-                if (gameMode === Infinity) { currentStreak = 0; updateStreakUI(); }
-            }
-            document.getElementById('next-btn').classList.add('active');
-        }
-
-        function showResult() {
-            switchScreen('result-screen');
-            const total = correctCount + wrongCount;
-            const percent = total === 0 ? 0 : Math.round((correctCount / total) * 100);
-            document.getElementById('pie-score').innerText = percent + '%';
-            document.getElementById('res-correct').innerText = correctCount;
-            document.getElementById('res-wrong').innerText = wrongCount;
-            const pie = document.getElementById('pie');
-            pie.style.background = `conic-gradient(var(--btn-correct) 0% 0%, var(--btn-wrong) 0% 100%)`;
-            setTimeout(() => { pie.style.background = `conic-gradient(var(--btn-correct) 0% ${percent}%, var(--btn-wrong) ${percent}% 100%)`; }, 100);
+        function goToMenu() {
+            showScreen('start-screen');
         }
 
         loadData();
