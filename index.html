@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Исторический Тест</title>
-    <!-- Подключаем SDK Telegram -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Библиотека для перетаскивания блоков -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    
     <style>
         :root {
-            --bg-color: #17212b; /* Темный фон как в TG */
+            --bg-color: #17212b;
             --text-color: #ffffff;
             --btn-bg: #232e3c;
             --btn-hover: #2b3a4a;
@@ -19,7 +21,7 @@
 
         * {
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent; /* Убираем синюю рамку на телефонах */
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -27,7 +29,7 @@
             color: var(--text-color);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 16px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -37,12 +39,12 @@
 
         #loading {
             text-align: center;
-            font-size: 18px;
+            font-size: 16px;
             color: #7f91a4;
         }
 
         #app {
-            display: none; /* Скрыто до загрузки данных */
+            display: none;
             width: 100%;
             max-width: 500px;
             margin: 0 auto;
@@ -50,19 +52,20 @@
 
         .question-box {
             background-color: var(--btn-bg);
-            padding: 25px 20px;
-            border-radius: 16px;
-            margin-bottom: 24px;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 16px;
             text-align: center;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            min-height: 120px;
+            min-height: 80px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
+        /* Уменьшили шрифт вопроса */
         .question-text {
-            font-size: 20px;
+            font-size: 16px;
             font-weight: 600;
             line-height: 1.4;
             margin: 0;
@@ -71,16 +74,17 @@
         .options {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
         }
 
+        /* Кнопки для обычных вариантов */
         .option-btn {
             background-color: var(--btn-bg);
             color: var(--text-color);
             border: none;
-            padding: 18px 20px;
-            border-radius: 12px;
-            font-size: 17px;
+            padding: 14px 16px;
+            border-radius: 10px;
+            font-size: 15px; /* Уменьшили шрифт кнопок */
             font-weight: 500;
             cursor: pointer;
             transition: background-color 0.2s, transform 0.1s;
@@ -92,82 +96,119 @@
             transform: scale(0.98);
         }
 
-        .option-btn.correct {
-            background-color: var(--btn-correct);
-            color: #fff;
+        .option-btn.correct { background-color: var(--btn-correct); color: #fff; }
+        .option-btn.wrong { background-color: var(--btn-wrong); color: #fff; }
+        .option-btn:disabled { cursor: default; opacity: 0.9; }
+
+        /* Сетка для выбора года */
+        .year-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
         }
 
-        .option-btn.wrong {
-            background-color: var(--btn-wrong);
-            color: #fff;
+        /* Стили для режима Хронологии (Drag and Drop) */
+        .sortable-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 16px;
         }
 
-        .option-btn:disabled {
-            cursor: default;
-            opacity: 0.9;
+        .sortable-item {
+            background-color: var(--btn-bg);
+            color: var(--text-color);
+            padding: 14px 16px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: grab;
+            border: 1px solid #334155;
+            position: relative;
         }
-        
-        .error-msg {
-            color: var(--btn-wrong);
-            text-align: center;
+
+        .sortable-item:active {
+            cursor: grabbing;
+            background-color: var(--btn-hover);
+        }
+
+        /* Иконка для перетаскивания */
+        .drag-handle {
+            color: #7f91a4;
+            font-size: 18px;
+            line-height: 1;
+        }
+
+        /* Кнопка Проверить для хронологии */
+        .check-btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 10px;
             font-size: 16px;
-            margin-top: 20px;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 10px;
         }
+
+        .check-btn:active { background-color: #1e6aa8; }
+
+        .error-msg { color: var(--btn-wrong); text-align: center; font-size: 16px; margin-top: 20px; }
+
+        /* Подсветка при проверке хронологии */
+        .sortable-item.correct { border-color: var(--btn-correct); background-color: rgba(49, 162, 76, 0.2); }
+        .sortable-item.wrong { border-color: var(--btn-wrong); background-color: rgba(232, 62, 62, 0.2); }
     </style>
 </head>
 <body>
 
-    <div id="loading">Загрузка данных из таблицы...</div>
+    <div id="loading">Загрузка данных...</div>
     
     <div id="app">
         <div class="question-box">
             <h1 class="question-text" id="question">Вопрос</h1>
         </div>
         <div class="options" id="options">
-            <!-- Сюда будут вставляться кнопки -->
+            <!-- Сюда будут вставляться кнопки или список -->
         </div>
     </div>
 
     <script>
-        // ТВОЯ ССЫЛКА НА CSV
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQTn-CgZGj1yqA4AZE1oW3SrZQmnadfwAYSiPaIGFMK0r6TIFbP1gQ7RI9wK0DH9rIC_Ub1fYjPbGe5/pub?gid=0&single=true&output=csv";
 
-        // Инициализация Telegram WebApp
         const tg = window.Telegram?.WebApp;
         if (tg) {
             tg.ready();
-            tg.expand(); // Развернуть на весь экран
-            // Если в Telegram задана темная тема, можно подхватить цвета, 
-            // но мы используем свои, чтобы было красиво везде.
+            tg.expand();
         }
 
-        let allData = []; // Массив объектов { year: "...", event: "..." }
+        let allData = [];
+        let sortableInstance = null; // Храним инстанс перетаскивания
 
-        // Простой парсер CSV (учитывает кавычки и запятые внутри текста)
         function parseCSV(text) {
             const lines = text.split('\n');
             const result = [];
-            
-            // Пропускаем первую строку (заголовки)
             for (let i = 1; i < lines.length; i++) {
                 const line = lines[i].trim();
                 if (!line) continue;
-
-                // Регулярка для разделения по запятой, игнорируя запятые в кавычках
                 const matches = line.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g);
                 if (matches && matches.length >= 2) {
                     const year = matches[0].replace(/^"|"$/g, '').trim();
                     const event = matches[1].replace(/^"|"$/g, '').trim();
-                    
+                    // Сохраняем год и как строку, и как число для сортировки
                     if (year && event) {
-                        result.push({ year: year, event: event });
+                        result.push({ year: year, event: event, numYear: parseInt(year) || 0 });
                     }
                 }
             }
             return result;
         }
 
-        // Перемешивание массива (Фишер-Йетс)
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -176,62 +217,61 @@
             return array;
         }
 
-        // Получить случайный элемент
         function getRandom(arr) {
             return arr[Math.floor(Math.random() * arr.length)];
         }
 
-        // Загрузка данных
         async function loadData() {
             try {
                 const response = await fetch(CSV_URL);
                 if (!response.ok) throw new Error("Ошибка сети");
-                
                 const csvText = await response.text();
                 allData = parseCSV(csvText);
 
-                if (allData.length < 4) {
-                    throw new Error("В таблице слишком мало данных (нужно минимум 4 строки).");
-                }
+                if (allData.length < 4) throw new Error("Мало данных (нужно от 4 строк).");
 
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
-                
                 nextQuestion();
-
             } catch (error) {
-                document.getElementById('loading').innerHTML = `<span class="error-msg">Ошибка загрузки:<br>${error.message}</span>`;
+                document.getElementById('loading').innerHTML = `<span class="error-msg">Ошибка: ${error.message}</span>`;
             }
         }
 
-        // Генерация нового вопроса
         function nextQuestion() {
             const questionEl = document.getElementById('question');
             const optionsEl = document.getElementById('options');
             
-            optionsEl.innerHTML = ''; // Очистить старые кнопки
-            questionEl.style.color = 'var(--text-color)';
+            optionsEl.innerHTML = '';
+            if (sortableInstance) {
+                sortableInstance.destroy(); // Уничтожаем старый инстанс при смене вопроса
+                sortableInstance = null;
+            }
 
-            // Определяем тип вопроса: 0 - ищем год, 1 - ищем событие
-            const type = Math.random() < 0.5 ? 0 : 1;
+            // Типы вопросов: 0 - В каком году, 1 - Что произошло, 2 - Хронология
+            const type = Math.floor(Math.random() * 3); 
             
-            // Выбираем правильную пару
+            if (type === 0 || type === 1) {
+                generateQuizQuestion(type, questionEl, optionsEl);
+            } else {
+                generateSortableQuestion(questionEl, optionsEl);
+            }
+        }
+
+        // --- Генерация обычных вопросов (выбор варианта) ---
+        function generateQuizQuestion(type, questionEl, optionsEl) {
             const correctItem = getRandom(allData);
-            
-            // Создаем пул для неверных ответов (исключаем правильный)
             const wrongPool = allData.filter(item => item !== correctItem);
             
             let questionText = "";
             let correctAnswer = "";
             let wrongAnswers = [];
-            let optionsList = [];
 
             if (type === 0) {
-                // Тип 0: В каком году произошло [Событие]?
+                // В каком году произошло...
                 questionText = `В каком году произошло событие:<br><br>"${correctItem.event}"?`;
                 correctAnswer = correctItem.year;
                 
-                // Берем 3 случайных неверных года, проверяя на дубликаты
                 let attempts = 0;
                 while (wrongAnswers.length < 3 && attempts < 100) {
                     const randItem = getRandom(wrongPool);
@@ -241,11 +281,10 @@
                     attempts++;
                 }
             } else {
-                // Тип 1: Что произошло в [Год] году?
+                // Что произошло в году...
                 questionText = `Что произошло в ${correctItem.year} году?`;
                 correctAnswer = correctItem.event;
                 
-                // Берем 3 случайных неверных события
                 let attempts = 0;
                 while (wrongAnswers.length < 3 && attempts < 100) {
                     const randItem = getRandom(wrongPool);
@@ -256,52 +295,96 @@
                 }
             }
 
-            // Если не набрали 3 неверных ответа (маловероятно при 190 строках, но на всякий случай)
-            if (wrongAnswers.length < 3) {
-                return nextQuestion(); // Перезапускаем генерацию
-            }
+            if (wrongAnswers.length < 3) return nextQuestion();
 
-            // Собираем все варианты и перемешиваем
-            optionsList = shuffle([correctAnswer, ...wrongAnswers]);
-
-            // Отображаем вопрос
             questionEl.innerHTML = questionText;
+            const optionsList = shuffle([correctAnswer, ...wrongAnswers]);
 
-            // Создаем кнопки
             optionsList.forEach(optionText => {
                 const btn = document.createElement('button');
                 btn.className = 'option-btn';
                 btn.innerText = optionText;
-                
                 btn.onclick = () => checkAnswer(btn, optionText, correctAnswer, optionsEl);
                 optionsEl.appendChild(btn);
             });
         }
 
-        // Обработка ответа
-        function checkAnswer(clickedBtn, selectedText, correctText, optionsContainer) {
-            // Отключаем все кнопки, чтобы нельзя было нажать дважды
-            const allBtns = optionsContainer.querySelectorAll('.option-btn');
-            allBtns.forEach(b => b.disabled = true);
+        // --- Генерация вопроса с хронологией (Drag & Drop) ---
+        function generateSortableQuestion(questionEl, optionsEl) {
+            questionEl.innerHTML = "Расставьте события по порядку:<br><span style='font-size:14px; font-weight:normal; color:#7f91a4'>от самого раннего к самому позднему</span>";
+            
+            // Берем 4 случайных события
+            const selectedItems = shuffle([...allData]).slice(0, 4);
+            // Перемешиваем их для старта
+            const shuffledItems = shuffle([...selectedItems]);
 
-            // Подсвечиваем правильный и неправильный ответы
+            const listContainer = document.createElement('div');
+            listContainer.className = 'sortable-list';
+            listContainer.id = 'sortable-list';
+
+            shuffledItems.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'sortable-item';
+                div.dataset.year = item.numYear; // Сохраняем числовой год для проверки
+                div.dataset.id = index;
+                div.innerHTML = `<span class="drag-handle">≡</span> <span>${item.event}</span>`;
+                listContainer.appendChild(div);
+            });
+
+            optionsEl.appendChild(listContainer);
+
+            const checkBtn = document.createElement('button');
+            checkBtn.className = 'check-btn';
+            checkBtn.innerText = 'Проверить';
+            checkBtn.onclick = () => checkSortableAnswer(listContainer, checkBtn, selectedItems);
+            optionsEl.appendChild(checkBtn);
+
+            // Инициализируем SortableJS
+            sortableInstance = new Sortable(listContainer, {
+                animation: 150,
+                handle: '.drag-handle', // Тянем только за иконку (чтобы можно было скроллить страницу)
+                ghostClass: 'sortable-ghost'
+            });
+        }
+
+        // --- Проверка обычного ответа ---
+        function checkAnswer(clickedBtn, selectedText, correctText, optionsContainer) {
+            const allBtns = optionsContainer.querySelectorAll('.option-btn');
             allBtns.forEach(b => {
-                if (b.innerText === correctText) {
-                    b.classList.add('correct');
-                } else if (b === clickedBtn && selectedText !== correctText) {
-                    b.classList.add('wrong');
+                b.disabled = true;
+                if (b.innerText === correctText) b.classList.add('correct');
+                else if (b === clickedBtn) b.classList.add('wrong');
+            });
+
+            setTimeout(() => nextQuestion(), 1500);
+        }
+
+        // --- Проверка хронологии ---
+        function checkSortableAnswer(listContainer, checkBtn, originalSelectedItems) {
+            checkBtn.disabled = true;
+            checkBtn.style.display = 'none'; // Прячем кнопку
+
+            const currentItems = Array.from(listContainer.children);
+            
+            // Сортируем правильный массив по годам (от меньшего к большему)
+            const correctOrder = [...originalSelectedItems].sort((a, b) => a.numYear - b.numYear);
+            
+            // Проверяем каждый блок
+            currentItems.forEach((el, index) => {
+                const currentYear = parseInt(el.dataset.year);
+                const correctYear = correctOrder[index].numYear;
+                
+                if (currentYear === correctYear) {
+                    el.classList.add('correct');
+                } else {
+                    el.classList.add('wrong');
                 }
             });
 
-            // Автоматический переход через 1.5 секунды
-            setTimeout(() => {
-                nextQuestion();
-            }, 1500);
+            setTimeout(() => nextQuestion(), 2000); // Даем больше времени посмотреть (2 сек)
         }
 
-        // Старт
         loadData();
-
     </script>
 </body>
 </html>
